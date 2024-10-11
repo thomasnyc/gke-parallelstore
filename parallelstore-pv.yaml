@@ -12,7 +12,7 @@ spec:
   volumeMode: Filesystem
   csi:
     driver: parallelstore.csi.storage.gke.io
-    volumeHandle: "thomashk-mig/locations/us-central1/instances/parallelstore1/default-pool/default-container"
+    volumeHandle: "thomashk-mig/us-central1/parallelstore1/default-pool/default-container"
     volumeAttributes:
       accessPoints: 10.113.134.4,10.113.134.3,10.113.134.2
       network: default
