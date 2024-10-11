@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: downloader-job1
+spec:
+  template:  # Template for the Pods the Job will create
+    metadata:
+      annotations:
+        gke-parallelstore/volumes: "true"
+        gke-parallelstore/cpu-request: 500m
+        gke-parallelstore/memory-request: 1Gi
+        gke-parallelstore/ephemeral-storage-request: 5Gi
+        gke-parallelstore/ephemeral-storage-limit: 10Gi
+    spec:
+      containers:
+      - name: copy
+        resources:
+          requests:
+            cpu: "6"
+          limits:
+            cpu: "6"
+        image: huggingface/downloader:0.17.3
+        command: [ "huggingface-cli" ]
+        args:
+        - download
+        - google/gemma-1.1-7b-it
+        - --local-dir=/data/gemma-7b
+        - --local-dir-use-symlinks=False
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        volumeMounts:
+        - mountPath: "/data"
+          name: parallelstore-pv 
+      restartPolicy: Never
+      volumes:
+      - name: parallelstore-pv 
+        persistentVolumeClaim:
+          claimName: parallelstore-pvc
+  parallelism: 1         # Run 1 Pods concurrently
+  completions: 1         # Once 1 Pods complete successfully, the Job is done
+  backoffLimit: 1        # Max retries on failure
